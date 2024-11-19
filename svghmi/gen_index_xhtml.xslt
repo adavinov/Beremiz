@@ -4812,6 +4812,107 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
+  <xsl:template match="widget[@type='Image']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>If Image widget is a svg:image element, then xlink:href content is replaced by
+</xsl:text>
+      <xsl:text>value of given variable.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Image display</xsl:text>
+    </shortdesc>
+  </xsl:template>
+  <xsl:template match="widget[@type='Image']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>ImageWidget</xsl:text>
+    <xsl:text> extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 5;
+</xsl:text>
+    <xsl:text>    dispatch(value, oldval, index) {
+</xsl:text>
+    <xsl:text>        this.fields[index] = value;
+</xsl:text>
+    <xsl:text>        if(!this.ready){
+</xsl:text>
+    <xsl:text>            this.readyfields[index] = true;
+</xsl:text>
+    <xsl:text>            this.ready = this.readyfields.every(x=&gt;x);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='Image']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
+    <xsl:variable name="field_initializer">
+      <xsl:for-each select="path">
+        <xsl:choose>
+          <xsl:when test="@type='HMI_STRING'">
+            <xsl:text>""</xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>0</xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+      </xsl:for-each>
+    </xsl:variable>
+    <xsl:text>    fields: [</xsl:text>
+    <xsl:value-of select="$field_initializer"/>
+    <xsl:text>],
+</xsl:text>
+    <xsl:variable name="readyfield_initializer">
+      <xsl:for-each select="path">
+        <xsl:text>false</xsl:text>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+      </xsl:for-each>
+    </xsl:variable>
+    <xsl:text>    readyfields: [</xsl:text>
+    <xsl:value-of select="$readyfield_initializer"/>
+    <xsl:text>],
+</xsl:text>
+    <xsl:text>    ready: false,
+</xsl:text>
+    <xsl:text>    animate: function(){
+</xsl:text>
+    <xsl:text>      this.element.setAttribute('xlink:href', this.fields[0]);
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    init: function() {
+</xsl:text>
+    <xsl:text>      this.animate();
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
   <xsl:template match="widget[@type='Input']" mode="widget_desc">
     <type>
       <xsl:value-of select="@type"/>
@@ -5038,7 +5139,7 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>Documentation to be written. see svghmi exemple.
+      <xsl:text>Documentation to be written. see svghmi example.
 </xsl:text>
     </longdesc>
     <shortdesc>
@@ -5243,7 +5344,7 @@
                   <xsl:variable name="name" select="substring-before($suffix,'=')"/>
                   <xsl:if test="$expr/@name[. != $name]">
                     <xsl:message terminate="yes">
-                      <xsl:text>JsonTable : missplaced '=' or inconsistent names in Json data expressions.</xsl:text>
+                      <xsl:text>JsonTable : misplaced '=' or inconsistent names in Json data expressions.</xsl:text>
                     </xsl:message>
                   </xsl:if>
                   <xsl:attribute name="name">
@@ -5316,7 +5417,7 @@
         <xsl:variable name="content_expr" select="$expressions/expression[2]/@content"/>
         <xsl:if test="string-length($content_expr) = 0 or $expressions/expression[2]/@name != 'textContent'">
           <xsl:message terminate="yes">
-            <xsl:text>Clones (svg:use) in JsonTable Widget pointing to a HMI:TextStyleList widget or item must have a "textContent=.someVal" assignement following value expression in label.</xsl:text>
+            <xsl:text>Clones (svg:use) in JsonTable Widget pointing to a HMI:TextStyleList widget or item must have a "textContent=.someVal" assignment following value expression in label.</xsl:text>
           </xsl:message>
         </xsl:if>
         <xsl:text>        {
@@ -5347,6 +5448,16 @@
 </xsl:text>
       </xsl:otherwise>
     </xsl:choose>
+  </xsl:template>
+  <xsl:template mode="json_table_elt_render" match="svg:image">
+    <xsl:param name="expressions"/>
+    <xsl:variable name="value_expr" select="$expressions/expression[1]/@content"/>
+    <xsl:text>        id("</xsl:text>
+    <xsl:value-of select="@id"/>
+    <xsl:text>").setAttribute('xlink:href', String(</xsl:text>
+    <xsl:value-of select="$value_expr"/>
+    <xsl:text>));
+</xsl:text>
   </xsl:template>
   <func:function name="func:filter_non_widget_label">
     <xsl:param name="elt"/>
@@ -10137,8 +10248,6 @@
           <xsl:text>    Object.keys(hmi_widgets).forEach(function(id) {
 </xsl:text>
           <xsl:text>        let widget = hmi_widgets[id];
-</xsl:text>
-          <xsl:text>        if(widget.curr_value != undefined) return;
 </xsl:text>
           <xsl:text>        widget.do_init();
 </xsl:text>
