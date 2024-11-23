@@ -1,0 +1,48 @@
+// widget_image.ysl2
+
+widget_desc("Image") {
+    longdesc
+    ||
+    If Image widget is a svg:image element, then xlink:href content is replaced by
+    value of given variable.
+    ||
+
+    shortdesc > Image display
+}
+
+widget_class("Image")
+    ||
+        frequency = 5;
+        dispatch(value, oldval, index) {
+            this.fields[index] = value;
+            if(!this.ready){
+                this.readyfields[index] = true;
+                this.ready = this.readyfields.every(x=>x);
+            }
+            this.request_animate();
+        }
+    ||
+
+widget_defs("Image") {
+    const "field_initializer" foreach "path" {
+        choose{
+            when "@type='HMI_STRING'" > ""
+            otherwise > 0
+        }
+        if "position()!=last()" > ,
+    }
+    |     fields: [«$field_initializer»],
+    const "readyfield_initializer" foreach "path" {
+        > false
+        if "position()!=last()" > ,
+    }
+    |     readyfields: [«$readyfield_initializer»],
+    |     ready: false,
+    |     animate: function(){
+    |       this.element.setAttribute('xlink:href', this.fields[0]);
+    |     },
+    |
+    |     init: function() {
+    |       this.animate();
+    |     },
+}
