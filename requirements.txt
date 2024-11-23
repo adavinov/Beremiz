@@ -34,7 +34,8 @@ python-dateutil==2.8.2
 pytz==2023.3
 six==1.16.0
 sortedcontainers==2.4.0
-sslpsk @ git+https://git@github.com/beremiz/sslpsk.git@9cb31986629b382f7427eec29ddc168ad21c7d7c
+# sslpsk @ git+https://git@github.com/beremiz/sslpsk.git@9cb31986629b382f7427eec29ddc168ad21c7d7c
+sslpsk-pmd3
 Twisted==22.10.0
 txaio==23.1.1
 typing_extensions==4.5.0

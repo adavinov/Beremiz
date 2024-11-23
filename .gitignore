@@ -1,6 +1,7 @@
 *.pyc
 **/__pycache__
 .vscode
+.idea
 **/build/**
 *.class
 **/.svghmithumbs/**

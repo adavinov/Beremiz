@@ -132,6 +132,9 @@ class NodeDropTarget(wx.DropTarget):
         self.ParentWindow.OnNodeDnD()
         return True
 
+    def OnData(self, x, y, defResult):
+        return defResult
+
 class OPCUASubListPanel(wx.Panel):
     def __init__(self, parent, log, model, direction):
         self.log = log
@@ -550,6 +553,9 @@ class OPCUAClientModel(dict):
             for direction, model in self.items():
                 self[direction][:] = []
             for row in reader:
+                if not row:
+                    continue
+
                 direction = row[0]
                 # avoids calling change callback whe loading CSV
                 list.append(self[direction],row[1:])

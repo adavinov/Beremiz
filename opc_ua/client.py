@@ -14,6 +14,9 @@ import util.paths as paths
 # - open62541 directory is aside beremiz directory
 # - open62541 was just built (not installed)
 
+MingwPath = paths.ThirdPartyPath("mingw64")
+MingwPathOptLibraryPath = os.path.join(MingwPath,"opt","lib")
+
 Open62541Path = paths.ThirdPartyPath("open62541")
 Open62541LibraryPath = os.path.join(Open62541Path,"build","bin") 
 Open62541IncludePaths = [os.path.join(Open62541Path, *dirs) for dirs in [
@@ -145,7 +148,11 @@ class OPCUAClient(object):
         with open(c_path, 'w') as c_file:
             c_file.write(c_code)
 
-        LDFLAGS = ['"' + os.path.join(Open62541LibraryPath, "libopen62541.a") + '"', '-lcrypto']
+        lib_crypto = f'"{os.path.join(MingwPathOptLibraryPath, "libcrypto.a")}"'  if os.name == 'nt' else  '-lcrypto'
+        lib_open62541 = f'"{os.path.join(Open62541LibraryPath, "libopen62541.a")}"'
+        LDFLAGS = [lib_open62541, lib_crypto]
+        if os.name == 'nt':
+            LDFLAGS.append('-lws2_32')
 
         CFLAGS = ' '.join(['-I"' + path + '"' for path in Open62541IncludePaths])
 
